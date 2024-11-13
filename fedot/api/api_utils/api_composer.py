@@ -134,7 +134,7 @@ class ApiComposer:
                                    .with_graph_generation_param(self.params.graph_generation_params)
                                    .build())
 
-        if self.timer.have_time_for_composing(self.params.get('pop_size'), self.params.n_jobs):
+        if False: #self.timer.have_time_for_composing(self.params.get('pop_size'), self.params.n_jobs):
             # Launch pipeline structure composition
             with self.timer.launch_composing():
                 self.log.message('Pipeline composition started.')
