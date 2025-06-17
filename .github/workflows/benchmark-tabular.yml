@@ -18,9 +18,6 @@ on:
       constraints:
         description: 'Resource constraints (e.g. 1h8c)'
         default: '1h8c'
-      test_timeout:
-        description: 'Test timeout in minutes'
-        default: '120'
 
 env:
   FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
@@ -28,7 +25,6 @@ env:
 
 jobs:
   run_benchmark:
-    timeout-minutes: ${{ inputs.test_timeout }}
     runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout AutoMLBenchmark
@@ -87,6 +83,6 @@ jobs:
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: fedot-benchmark-results
+          name: fedot-benchmark-results-${{ github.run_id }}
           path: ${{ env.BENCHMARK_DIR }}/results/
           retention-days: 7
