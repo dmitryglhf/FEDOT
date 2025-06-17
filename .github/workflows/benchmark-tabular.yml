@@ -34,10 +34,10 @@ jobs:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
 
-      - name: Install FEDOT from branch
+      - name: Specify FEDOT branch
         run: |
-          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
-          bash setup.sh '${{ inputs.fedot_branch }}' '${{ env.FEDOT_REPO }}' 'fedot'
+          cd automlbenchmark/frameworks/FEDOT
+          sed -i "s/^VERSION=.*$/VERSION='${{ inputs.fedot_branch }}'/" setup.sh
 
       - name: Install AutoMLBenchmark dependencies
         run: |
