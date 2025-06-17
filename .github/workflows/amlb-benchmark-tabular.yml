@@ -9,6 +9,12 @@ on:
       os:
         description: 'Runner OS'
         default: 'ubuntu-latest'
+      preset:
+        description: 'test, small, medium, large'
+        default: test
+      constraint:
+        description: 'test (2f5min4c), 1h4c, 1h8c'
+        default: test
 
 env:
   FEDOT_REPO: 'https://github.com/dmitryglhf/FEDOT.git'
@@ -64,7 +70,7 @@ jobs:
       - name: Run benchmark
         run: |
           cd ${{ env.BENCHMARK_DIR }}
-          python runbenchmark.py FEDOT
+          python runbenchmark.py FEDOT ${{ inputs.preset }} ${{ inputs.constraint }}
         env:
           GITHUB_PAT: ${{ secrets.PUBLIC_ACCESS_GITHUB_PAT }}
 
