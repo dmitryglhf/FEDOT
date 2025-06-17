@@ -37,12 +37,10 @@ jobs:
       - name: Specify FEDOT branch
         run: |
           cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
-          if [[ "${{ inputs.fedot_branch }}" == "stable" || "${{ inputs.fedot_branch }}" == "latest" ]]; then
-            sed -i "s/^VERSION=.*$/VERSION=\"${{ inputs.fedot_branch }}\"/" setup.sh
-          else
-            sed -i "s/^VERSION=.*$/VERSION='${{ inputs.fedot_branch }}'/" setup.sh
-          fi
-          echo "Set FEDOT branch to: ${{ inputs.fedot_branch }}"
+          python -m venv venv
+          source venv/bin/activate
+          pip install git+https://github.com/dmitryglhf/FEDOT.git@${{ inputs.fedot_branch }}
+          deactivate
 
       - name: Install AutoMLBenchmark dependencies
         run: |
