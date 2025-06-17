@@ -10,13 +10,13 @@ on:
         description: 'Runner OS'
         default: 'ubuntu-latest'
       fedot_branch:
-        description: 'FEDOT branch/tag/commit (e.g. master, develop, #a1b2c3d)'
+        description: 'FEDOT branch/tag/commit'
         default: 'master'
       preset:
         description: 'Benchmark preset'
         default: 'small'
       constraints:
-        description: 'Resource constraints (e.g. 1h8c)'
+        description: 'Resource constraints'
         default: '1h8c'
 
 env:
@@ -45,22 +45,29 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Prepare FEDOT
+      - name: Prepare FEDOT framework
         run: |
-          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
+          cd ${{ env.BENCHMARK_DIR }}
           
-          # Force branch selection
-          if [[ "${{ inputs.fedot_branch }}" == "stable" ]]; then
-            echo "Using stable release from PyPI"
-          else
-            echo "Overriding FEDOT version to ${{ inputs.fedot_branch }}"
-            sed -i "s|VERSION=.*|VERSION='${{ inputs.fedot_branch }}'|" setup.sh
-            sed -i "s|REPO=.*|REPO='https://github.com/aimclub/FEDOT.git'|" setup.sh
-          fi
+          # Создаем структуру каталогов для FEDOT
+          mkdir -p frameworks/FEDOT
+          cd frameworks/FEDOT
           
-          # Show modified setup.sh for debug
-          cat setup.sh
+          # Копируем оригинальный setup.sh из ресурсов
+          cp ../../resources/frameworks/FEDOT/setup.sh .
           chmod +x setup.sh
+          
+          # Модифицируем для автоматического создания venv
+          cat >> setup.sh << 'EOF'
+          
+          if [ ! -d "venv" ]; then
+              echo "Creating virtual environment..."
+              python -m venv venv
+          fi
+          source venv/bin/activate
+          EOF
+
+          ./setup.sh ${{ inputs.fedot_branch }}
 
       - name: Run benchmark
         run: |
