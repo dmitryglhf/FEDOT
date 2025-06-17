@@ -1,19 +1,20 @@
-name: Run AutoMLBenchmark for FEDOT
+name: Run AutoMLBenchmark
 
 on:
   workflow_dispatch:
     inputs:
       python_version:
-        description: 'Python version (3.8, 3.9, 3.10)'
+        description: 'Python version'
         default: '3.9'
       os:
-        description: 'Runner OS (ubuntu-latest, macos-latest, windows-latest)'
+        description: 'Runner OS'
         default: 'ubuntu-latest'
       fedot_branch:
-        description: 'FEDOT branch/tag/commit (e.g. master, develop, 0.7.5)'
+        description: 'Branch to test'
         default: 'master'
 
 env:
+  FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
   BENCHMARK_DIR: 'automlbenchmark'
 
 jobs:
@@ -33,61 +34,22 @@ jobs:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
 
-      - name: Install AutoMLBenchmark
+      - name: Install AutoMLBenchmark dependencies
         run: |
           cd ${{ env.BENCHMARK_DIR }}
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install -r requirements.txt
 
-      - name: Prepare FEDOT framework
+      - name: Run benchmark
         run: |
           cd ${{ env.BENCHMARK_DIR }}
-          
-          # Create FEDOT framework directory
-          mkdir -p frameworks/FEDOT
-          cd frameworks/FEDOT
-          
-          # Create setup.sh with automatic venv creation
-          cat > setup.sh << 'EOF'
-          #!/usr/bin/env bash
-          HERE=$(dirname "$0")
-          
-          # Create virtual environment if not exists
-          if [ ! -d "venv" ]; then
-              echo "Creating virtual environment..."
-              python -m venv venv
-          fi
-          
-          # Activate and set up environment
-          source venv/bin/activate
-          pip install --upgrade pip setuptools wheel
-          
-          # Install FEDOT from specified source
-          if [[ "$1" == "stable" ]]; then
-              pip install fedot
-          else
-              pip install git+https://github.com/aimclub/FEDOT.git@$1
-          fi
-          
-          # Verify installation
-          python -c "import fedot; print(f'\nFEDOT successfully installed\nVersion: {fedot.__version__}\n')"
-          EOF
-          
-          chmod +x setup.sh
-          ./setup.sh ${{ inputs.fedot_branch }}
-
-      - name: Run benchmark (default settings)
-        run: |
-          cd ${{ env.BENCHMARK_DIR }}
-          echo "Starting benchmark with default settings (no constraints)"
           python runbenchmark.py FEDOT
         env:
           GITHUB_PAT: ${{ secrets.PUBLIC_ACCESS_GITHUB_PAT }}
 
-      - name: Upload results
-        if: always()
+      - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: fedot-results-${{ github.run_id }}
+          name: fedot-benchmark-results-${{ github.run_id }}
           path: ${{ env.BENCHMARK_DIR }}/results/
           retention-days: 7
