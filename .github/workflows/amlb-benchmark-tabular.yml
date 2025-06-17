@@ -31,14 +31,32 @@ jobs:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
 
-      - name: Specify FEDOT branch
+      - name: Create and setup FEDOT directory
         run: |
           echo "Using FEDOT branch: ${{ github.ref_name }}"
-          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
-          python -m venv venv
-          source venv/bin/activate
-          pip install git+https://github.com/dmitryglhf/FEDOT@${{ github.ref_name }}
-          deactivate
+          
+          rm ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh
+          
+          cat > ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh << 'EOF'
+          #!/usr/bin/env bash
+          set -e
+          
+          HERE=$(dirname "$0")
+          BRANCH="${{ github.ref_name }}"
+          REPO="${{ env.FEDOT_REPO }}"
+          
+          # Setup virtual environment
+          . ${HERE}/../shared/setup.sh ${HERE} true
+          
+          # Install FEDOT from specified branch
+          pip install --upgrade pip
+          pip install git+${REPO}@${BRANCH}
+          
+          # Verify installation
+          python -c "from fedot import __version__; print(__version__)" >> "${HERE}/.setup/installed"
+          EOF
+          
+          chmod +x ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh
 
       - name: Install AutoMLBenchmark dependencies
         run: |
