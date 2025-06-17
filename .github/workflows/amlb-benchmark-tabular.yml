@@ -11,7 +11,7 @@ on:
         default: 'ubuntu-latest'
 
 env:
-  FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
+  FEDOT_REPO: 'https://github.com/dmitryglhf/FEDOT.git'
   BENCHMARK_DIR: 'automlbenchmark'
 
 jobs:
