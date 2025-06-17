@@ -9,12 +9,9 @@ on:
       os:
         description: 'Runner OS'
         default: 'ubuntu-latest'
-      fedot_branch:
-        description: 'Branch to test'
-        default: 'master'
 
 env:
-  FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
+  FEDOT_REPO: 'https://github.com/dmitryghlf/FEDOT.git'
   BENCHMARK_DIR: 'automlbenchmark'
 
 jobs:
@@ -34,10 +31,17 @@ jobs:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
 
+      - name: Get current branch name
+        id: branch-name
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')" >> $GITHUB_OUTPUT
+
       - name: Specify FEDOT branch
         run: |
-          cd automlbenchmark/frameworks/FEDOT
-          sed -i "s/VERSION=\${1:-'stable'}/VERSION='master'/" setup.sh
+          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
+          python -m venv venv
+          source venv/bin/activate
+          pip install git+${{ env.FEDOT_REPO }}@${{ steps.branch-name.outputs.branch }}
+          deactivate
 
       - name: Install AutoMLBenchmark dependencies
         run: |
