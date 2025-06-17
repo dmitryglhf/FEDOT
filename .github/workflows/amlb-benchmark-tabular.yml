@@ -37,13 +37,8 @@ jobs:
           cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
           python -m venv venv
           source venv/bin/activate
-          pip install git+https://github.com/dmitryglhf/FEDOT
+          pip install git+https://github.com/dmitryglhf/FEDOT@${{ github.ref_name }}
           deactivate
-          cd /venv/lib/python${{ inputs.python_version }}/site-packages
-          rm -r fedot
-          git clone --single-branch --branch ${{ github.ref_name }} ${{ env.FEDOT_REPO }}
-          cd FEDOT
-          mv fedot ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/venv/lib/python${{ inputs.python_version }}/site-packages
 
       - name: Install AutoMLBenchmark dependencies
         run: |
