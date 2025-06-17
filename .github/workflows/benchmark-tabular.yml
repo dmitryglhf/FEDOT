@@ -36,7 +36,7 @@ jobs:
 
       - name: Specify FEDOT branch
         run: |
-          cd ${{ env.BENCHMARK_DIR }}
+          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
           sed -i "s/VERSION=\${1:-'stable'}/VERSION='${{ inputs.fedot_branch }}'/" ${{ env.SETUP_SH_PATH }}
 
       - name: Install AutoMLBenchmark dependencies
