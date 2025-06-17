@@ -14,63 +14,79 @@ on:
         default: 'master'
       preset:
         description: 'Benchmark preset (small, medium, large)'
-        default: 'test'
+        default: 'small'
       constraints:
         description: 'Resource constraints (e.g. 1h8c)'
-        default: ''
+        default: '1h8c'
+      test_timeout:
+        description: 'Test timeout in minutes'
+        default: '120'
+
+env:
+  FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
+  BENCHMARK_DIR: 'automlbenchmark'
 
 jobs:
   run_benchmark:
+    timeout-minutes: ${{ inputs.test_timeout }}
     runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout AutoMLBenchmark
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: openml/automlbenchmark
-          path: automlbenchmark
+          path: ${{ env.BENCHMARK_DIR }}
+          fetch-depth: 0
 
       - name: Set up Python ${{ inputs.python_version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python_version }}
+          cache: 'pip'
 
       - name: Install AutoMLBenchmark dependencies
         run: |
-          cd automlbenchmark
+          cd ${{ env.BENCHMARK_DIR }}
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Prepare FEDOT framework directory
+      - name: Prepare FEDOT framework
         run: |
-          cd automlbenchmark/frameworks
+          cd ${{ env.BENCHMARK_DIR }}/frameworks
           mkdir -p FEDOT
           cd FEDOT
-          # Create dedicated venv for FEDOT
+          
+          echo "Creating virtual environment..."
           python -m venv venv
           source venv/bin/activate
-          pip install --upgrade pip
           
-          # Install FEDOT from specified branch
-          pip install git+https://github.com/aimclub/FEDOT.git@${{ inputs.fedot_branch }}
+          echo "Updating pip and setuptools..."
+          pip install --upgrade pip setuptools wheel
           
-          # Verify FEDOT installation
+          echo "Installing FEDOT from branch ${{ inputs.fedot_branch }}..."
+          pip install git+${{ env.FEDOT_REPO }}@${{ inputs.fedot_branch }}
+          
+          echo "Verifying installation..."
           pip list | grep fedot
           python -c "import fedot; print(f'FEDOT version: {fedot.__version__}')"
           
-          # Create minimal setup.sh for AutoMLBenchmark
-          echo '#!/bin/bash' > setup.sh
-          echo 'source venv/bin/activate' >> setup.sh
+          echo "Creating setup.sh..."
+          cat > setup.sh << 'EOF'
+          #!/bin/bash
+          source venv/bin/activate
+          EOF
           chmod +x setup.sh
 
       - name: Run benchmark
         run: |
-          cd automlbenchmark
+          cd ${{ env.BENCHMARK_DIR }}
           python runbenchmark.py FEDOT ${{ inputs.preset }} -t ${{ inputs.constraints }}
         env:
           GITHUB_PAT: ${{ secrets.PUBLIC_ACCESS_GITHUB_PAT }}
 
-      - name: Upload results
-        uses: actions/upload-artifact@v3
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results
-          path: automlbenchmark/results/
+          name: fedot-benchmark-results
+          path: ${{ env.BENCHMARK_DIR }}/results/
+          retention-days: 7
