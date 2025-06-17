@@ -34,10 +34,7 @@ jobs:
       - name: Create and setup FEDOT directory
         run: |
           echo "Using FEDOT branch: ${{ github.ref_name }}"
-          
-          # Создаем директорию и setup.sh
           rm -f ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh
-          
           cat > ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh << 'EOF'
           #!/usr/bin/env bash
           set -e
@@ -46,20 +43,16 @@ jobs:
           BRANCH="${{ github.ref_name }}"
           REPO="${{ env.FEDOT_REPO }}"
           
-          # Создаем виртуальное окружение (выполняется через shared/setup.sh)
           . ${HERE}/../shared/setup.sh ${HERE} true
           
-          # Активируем venv и устанавливаем FEDOT
           source ${HERE}/venv/bin/activate
           pip install --upgrade pip
           pip install git+${REPO}@${BRANCH}
           
-          # Проверяем установку
           python -c "from fedot import __version__; print(__version__)" >> "${HERE}/.setup/installed"
           echo "FEDOT installed in: $(which python)"
           EOF
           
-          # Делаем файл исполняемым
           chmod +x ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT/setup.sh
 
       - name: Install AutoMLBenchmark dependencies
