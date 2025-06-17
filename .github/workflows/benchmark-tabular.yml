@@ -10,17 +10,16 @@ on:
         description: 'Runner OS'
         default: 'ubuntu-latest'
       fedot_branch:
-        description: 'FEDOT branch to test'
+        description: 'FEDOT branch/tag/commit (e.g. master, develop, #a1b2c3d)'
         default: 'master'
       preset:
-        description: 'Benchmark preset (small, medium, large)'
+        description: 'Benchmark preset'
         default: 'small'
       constraints:
         description: 'Resource constraints (e.g. 1h8c)'
         default: '1h8c'
 
 env:
-  FEDOT_REPO: 'https://github.com/aimclub/FEDOT.git'
   BENCHMARK_DIR: 'automlbenchmark'
 
 jobs:
@@ -40,37 +39,27 @@ jobs:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
 
-      - name: Install AutoMLBenchmark dependencies
+      - name: Install AutoMLBenchmark
         run: |
           cd ${{ env.BENCHMARK_DIR }}
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Prepare FEDOT framework
+      - name: Prepare FEDOT
         run: |
-          cd ${{ env.BENCHMARK_DIR }}/frameworks
-          mkdir -p FEDOT
-          cd FEDOT
+          cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
           
-          echo "Creating virtual environment..."
-          python -m venv venv
-          source venv/bin/activate
+          # Force branch selection
+          if [[ "${{ inputs.fedot_branch }}" == "stable" ]]; then
+            echo "Using stable release from PyPI"
+          else
+            echo "Overriding FEDOT version to ${{ inputs.fedot_branch }}"
+            sed -i "s|VERSION=.*|VERSION='${{ inputs.fedot_branch }}'|" setup.sh
+            sed -i "s|REPO=.*|REPO='https://github.com/aimclub/FEDOT.git'|" setup.sh
+          fi
           
-          echo "Updating pip and setuptools..."
-          pip install --upgrade pip setuptools wheel
-          
-          echo "Installing FEDOT from branch ${{ inputs.fedot_branch }}..."
-          pip install git+${{ env.FEDOT_REPO }}@${{ inputs.fedot_branch }}
-          
-          echo "Verifying installation..."
-          pip list | grep fedot
-          python -c "import fedot; print(f'FEDOT version: {fedot.__version__}')"
-          
-          echo "Creating setup.sh..."
-          cat > setup.sh << 'EOF'
-          #!/bin/bash
-          source venv/bin/activate
-          EOF
+          # Show modified setup.sh for debug
+          cat setup.sh
           chmod +x setup.sh
 
       - name: Run benchmark
@@ -80,9 +69,9 @@ jobs:
         env:
           GITHUB_PAT: ${{ secrets.PUBLIC_ACCESS_GITHUB_PAT }}
 
-      - name: Upload benchmark results
+      - name: Upload results
         uses: actions/upload-artifact@v4
         with:
-          name: fedot-benchmark-results-${{ github.run_id }}
+          name: fedot-results-${{ github.run_id }}
           path: ${{ env.BENCHMARK_DIR }}/results/
           retention-days: 7
