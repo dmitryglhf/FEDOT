@@ -34,13 +34,13 @@ jobs:
       - name: Get current branch name
         id: branch-name
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')" >> $GITHUB_OUTPUT
-
+        
       - name: Specify FEDOT branch
         run: |
           cd ${{ env.BENCHMARK_DIR }}/frameworks/FEDOT
           python -m venv venv
           source venv/bin/activate
-          pip install git+${{ env.FEDOT_REPO }}@${{ steps.branch-name.outputs.branch }}
+          pip install git+https://${{ secrets.GITHUB_TOKEN }}@github.com/dmitryghlf/FEDOT.git@${{ inputs.fedot_branch }}
           deactivate
 
       - name: Install AutoMLBenchmark dependencies
