@@ -53,20 +53,37 @@ jobs:
           mkdir -p frameworks/FEDOT
           cd frameworks/FEDOT
           
-          # Копируем оригинальный setup.sh из ресурсов
-          cp ../../resources/frameworks/FEDOT/setup.sh .
-          chmod +x setup.sh
+          # Создаем новый setup.sh с полной логикой
+          cat > setup.sh << 'EOF'
+          #!/usr/bin/env bash
+          HERE=$(dirname "$0")
           
-          # Модифицируем для автоматического создания venv
-          cat >> setup.sh << 'EOF'
-          
+          # Создаем venv если его нет
           if [ ! -d "venv" ]; then
               echo "Creating virtual environment..."
               python -m venv venv
           fi
+          
+          # Активируем venv
           source venv/bin/activate
+          
+          # Устанавливаем выбранную версию FEDOT
+          pip install --upgrade pip
+          if [[ "$1" == "stable" ]]; then
+              pip install fedot
+          else
+              pip install git+https://github.com/aimclub/FEDOT.git@$1
+          fi
+          
+          # Проверяем установку
+          pip list | grep fedot
+          python -c "import fedot; print(f'FEDOT version: {fedot.__version__}')"
           EOF
-
+          
+          # Делаем скрипт исполняемым
+          chmod +x setup.sh
+          
+          # Запускаем setup.sh с указанной веткой
           ./setup.sh ${{ inputs.fedot_branch }}
 
       - name: Run benchmark
