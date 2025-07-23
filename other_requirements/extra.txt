@@ -14,5 +14,5 @@ nltk==3.8.1
 protobuf~=3.19.0
 
 # Topological features
-giotto_tda==0.6.0
+giotto_tda>=0.6.0
 ripser==0.6.4
