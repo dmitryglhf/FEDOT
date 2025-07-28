@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
     "thegolem==0.4.1",
     "numpy>=1.23.0,<2.0.0",
-    "pandas>=1.5.3,<2.0.0",
+    "pandas>=1.5.3",
     "scipy>=1.9.3,<2.0.0",
     "dask<2026.0.0",
     "dask-ml==2025.1.0; python_version == '3.11'",
