@@ -88,7 +88,7 @@ profilers = [
 
 [tool.setuptools]
 include-package-data = true
-packages = { exclude = ["test*"] }
+packages.find = { exclude = ["test*"] }
 
 [tool.setuptools.dynamic]
 version = { attr = "fedot.__version__" }
