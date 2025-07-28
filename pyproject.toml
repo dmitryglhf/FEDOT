@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fedot"
-version = "0.0.0"
+version = "0.7.5"
 authors = [{ name = "NSS Lab", email = "itmo.nss.team@gmail.com" }]
 description = "Automated machine learning framework for composite pipelines"
 readme = "README_en.rst"
@@ -31,8 +31,7 @@ dependencies = [
     "ete3>=3.1.0",
     "networkx>=2.4, !=2.7.*, !=2.8.1, !=2.8.2, !=2.8.3",
     "scikit-learn>=1.0.0,<1.7.0",
-    "sktime==0.16.1; python_version < '3.10'",
-    "sktime>=0.21.0; python_version >= '3.11'",
+    "sktime>=0.16.1",
     "hyperopt==0.2.7",
     "SALib>=1.3.0",
     "scikit-optimize>=0.7.4",
@@ -69,7 +68,7 @@ examples_automl = [
     "h2o == 3.46.0.6"
 ]
 extra = [
-    "tensorflow>=2.8.0; python_version >= '3.9'",
+    "tensorflow>=2.8.0",
     "torch>=1.9.0",
     "opencv-python>=4.5.5.64",
     "Pillow>=8.2.0",
@@ -89,6 +88,3 @@ profilers = [
 [tool.setuptools]
 include-package-data = true
 packages.find = { exclude = ["test*"] }
-
-[tool.setuptools.dynamic]
-version = { attr = "fedot.__version__" }
