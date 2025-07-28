@@ -74,7 +74,7 @@ extra = [
     "Pillow>=9.3.0",
     "gensim==4.3.2",
     "nltk==3.8.1",
-    "protobuf~=3.19.0",
+    "protobuf>=3.20.3,<5.0.0",
     "giotto_tda>=0.6.0",
     "ripser==0.6.4"
 ]
