@@ -112,7 +112,7 @@ If your contribution requires a new library dependency:
    changes because we want to keep FEDOT easy to install.
 
 - Add the required version of the library to
-   [requirements.txt](requirements.txt)
+   [pyproject.toml](pyproject.toml)
 
 ## Contribute to the documentation
 
